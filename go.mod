@@ -1,4 +1,4 @@
-module github.com/gobitfly/eth-rewards-calculator
+module github.com/gobitfly/eth-rewards
 
 go 1.15
 

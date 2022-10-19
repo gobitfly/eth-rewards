@@ -1,0 +1,22 @@
+syntax = "proto3";
+package types;
+
+option go_package = "./types";
+
+message ValidatorEpochIncome {
+    uint64 Index = 1;
+    uint64 AttestationSourceReward = 2;
+    uint64 AttestationSourcePenalty = 3;
+    uint64 AttestationTargetReward = 4;
+    uint64 AttestationTargetPenalty = 5;
+    uint64 AttestationHeadReward = 6;
+    uint64 FinalityDelayPenalty = 7;
+    uint64 ProposerSlashingInclusionReward = 8;
+    uint64 ProposerAttestationInclusionReward = 9;
+    uint64 ProposerSyncInclusionReward = 10;
+    uint64 SyncCommitteeReward = 11;
+    uint64 SyncCommitteePenalty = 12;
+    uint64 SlashingReward = 13;
+    uint64 SlashingPenalty = 14;
+    bytes TxFeeRewardWei = 15;
+}

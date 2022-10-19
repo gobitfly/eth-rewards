@@ -1,4 +1,4 @@
-module eth-rewards-calculator
+module github.com/gobitfly/eth-rewards-calculator
 
 go 1.15
 

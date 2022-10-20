@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 
-	"eth-rewards-calculator/rewards"
+	ethrewards "github.com/gobitfly/eth-rewards"
 
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/prysmaticlabs/prysm/v3/api/client/beacon"
@@ -28,7 +28,7 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	income, err := rewards.GetRewardsForEpoch(*epoch, client, elClient)
+	income, err := ethrewards.GetRewardsForEpoch(*epoch, client, elClient)
 	if err != nil {
 		logrus.Fatal(err)
 	}

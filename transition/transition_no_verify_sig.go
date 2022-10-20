@@ -5,11 +5,11 @@ import (
 	"context"
 	"fmt"
 
-	"eth-rewards-calculator/altair"
-	b "eth-rewards-calculator/blocks"
-	"eth-rewards-calculator/types"
-	itypes "eth-rewards-calculator/types"
-	v "eth-rewards-calculator/validators"
+	"github.com/gobitfly/eth-rewards/altair"
+	b "github.com/gobitfly/eth-rewards/blocks"
+	"github.com/gobitfly/eth-rewards/types"
+	itypes "github.com/gobitfly/eth-rewards/types"
+	v "github.com/gobitfly/eth-rewards/validators"
 
 	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v3/beacon-chain/state"

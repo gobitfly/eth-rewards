@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 
-	itypes "eth-rewards-calculator/types"
+	itypes "github.com/gobitfly/eth-rewards/types"
 
 	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v3/beacon-chain/core/blocks"

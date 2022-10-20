@@ -8,8 +8,8 @@ import (
 	"context"
 	"fmt"
 
-	"eth-rewards-calculator/altair"
-	itypes "eth-rewards-calculator/types"
+	"github.com/gobitfly/eth-rewards/altair"
+	itypes "github.com/gobitfly/eth-rewards/types"
 
 	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v3/beacon-chain/cache"

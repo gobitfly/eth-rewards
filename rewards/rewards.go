@@ -2,11 +2,12 @@ package rewards
 
 import (
 	"context"
-	"eth-rewards-calculator/elrewards"
-	"eth-rewards-calculator/transition"
-	"eth-rewards-calculator/types"
 	"fmt"
 	"strings"
+
+	"github.com/gobitfly/eth-rewards/elrewards"
+	"github.com/gobitfly/eth-rewards/transition"
+	"github.com/gobitfly/eth-rewards/types"
 
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/prysmaticlabs/prysm/v3/api/client/beacon"

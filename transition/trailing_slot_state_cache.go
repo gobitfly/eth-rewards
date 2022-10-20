@@ -3,8 +3,9 @@ package transition
 import (
 	"bytes"
 	"context"
-	itypes "eth-rewards-calculator/types"
 	"sync"
+
+	itypes "github.com/gobitfly/eth-rewards/types"
 
 	"github.com/prysmaticlabs/prysm/v3/beacon-chain/state"
 )

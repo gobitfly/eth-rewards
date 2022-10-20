@@ -3,9 +3,9 @@ package altair
 import (
 	"context"
 
-	"eth-rewards-calculator/precompute"
+	"github.com/gobitfly/eth-rewards/precompute"
 
-	itypes "eth-rewards-calculator/types"
+	itypes "github.com/gobitfly/eth-rewards/types"
 
 	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v3/beacon-chain/core/helpers"

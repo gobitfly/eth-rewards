@@ -3,8 +3,8 @@ package altair
 import (
 	"context"
 
-	"eth-rewards-calculator/precompute"
-	itypes "eth-rewards-calculator/types"
+	"github.com/gobitfly/eth-rewards/precompute"
+	itypes "github.com/gobitfly/eth-rewards/types"
 
 	"github.com/pkg/errors"
 	e "github.com/prysmaticlabs/prysm/v3/beacon-chain/core/epoch"

@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	gethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/gobitfly/eth-rewards/types"
 	"github.com/prysmaticlabs/prysm/v3/consensus-types/interfaces"
 )
 
@@ -35,7 +35,7 @@ func GetELRewardForBlock(block interfaces.SignedBeaconBlock, client *rpc.Client)
 		txHashes = append(txHashes, decTx.Hash())
 	}
 
-	var txReceipts []*TxReceipt
+	var txReceipts []*types.TxReceipt
 	for j := 0; j < 10; j++ { // retry up to 10 times
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		txReceipts, err = batchRequestReceipts(ctx, client, txHashes)
@@ -75,12 +75,12 @@ func GetELRewardForBlock(block interfaces.SignedBeaconBlock, client *rpc.Client)
 	return totalTxFee, nil
 }
 
-func batchRequestReceipts(ctx context.Context, elClient *rpc.Client, txHashes []common.Hash) ([]*TxReceipt, error) {
+func batchRequestReceipts(ctx context.Context, elClient *rpc.Client, txHashes []common.Hash) ([]*types.TxReceipt, error) {
 	elems := make([]rpc.BatchElem, 0, len(txHashes))
 	errors := make([]error, 0, len(txHashes))
-	txReceipts := make([]*TxReceipt, len(txHashes))
+	txReceipts := make([]*types.TxReceipt, len(txHashes))
 	for i, h := range txHashes {
-		txReceipt := &TxReceipt{}
+		txReceipt := &types.TxReceipt{}
 		err := error(nil)
 		elems = append(elems, rpc.BatchElem{
 			Method: "eth_getTransactionReceipt",
@@ -101,20 +101,4 @@ func batchRequestReceipts(ctx context.Context, elClient *rpc.Client, txHashes []
 		}
 	}
 	return txReceipts, nil
-}
-
-type TxReceipt struct {
-	BlockHash         *common.Hash    `json:"blockHash"`
-	BlockNumber       *hexutil.Big    `json:"blockNumber"`
-	ContractAddress   *common.Address `json:"contractAddress,omitempty"`
-	CumulativeGasUsed hexutil.Uint64  `json:"cumulativeGasUsed"`
-	EffectiveGasPrice *hexutil.Big    `json:"effectiveGasPrice"`
-	From              *common.Address `json:"from,omitempty"`
-	GasUsed           hexutil.Uint64  `json:"gasUsed"`
-	LogsBloom         hexutil.Bytes   `json:"logsBloom"`
-	Status            hexutil.Uint64  `json:"status"`
-	To                *common.Address `json:"to,omitempty"`
-	TransactionHash   *common.Hash    `json:"transactionHash"`
-	TransactionIndex  hexutil.Uint64  `json:"transactionIndex"`
-	Type              hexutil.Uint64  `json:"type"`
 }

@@ -25,6 +25,11 @@ func GetELRewardForBlock(block interfaces.SignedBeaconBlock, client *rpc.Client)
 	if err != nil {
 		return nil, err
 	}
+
+	if len(txs) == 0 {
+		return big.NewInt(0), nil
+	}
+
 	txHashes := []common.Hash{}
 	for _, tx := range txs {
 		var decTx gethTypes.Transaction

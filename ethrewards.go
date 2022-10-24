@@ -98,6 +98,7 @@ func GetRewardsForEpoch(epoch int, client *beacon.Client, elClient *rpc.Client) 
 		if b == nil {
 			continue
 		}
+		logrus.Infof("processing state transition for slot %v", i)
 		_, s, err = transition.ExecuteStateTransitionNoVerifyAnySig(ctx, s, b.CLBlock, rewards)
 		if err != nil {
 			return nil, err

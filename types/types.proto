@@ -4,19 +4,19 @@ package types;
 option go_package = "./types";
 
 message ValidatorEpochIncome {
-    uint64 Index = 1;
-    uint64 AttestationSourceReward = 2;
-    uint64 AttestationSourcePenalty = 3;
-    uint64 AttestationTargetReward = 4;
-    uint64 AttestationTargetPenalty = 5;
-    uint64 AttestationHeadReward = 6;
-    uint64 FinalityDelayPenalty = 7;
-    uint64 ProposerSlashingInclusionReward = 8;
-    uint64 ProposerAttestationInclusionReward = 9;
-    uint64 ProposerSyncInclusionReward = 10;
-    uint64 SyncCommitteeReward = 11;
-    uint64 SyncCommitteePenalty = 12;
-    uint64 SlashingReward = 13;
-    uint64 SlashingPenalty = 14;
-    bytes TxFeeRewardWei = 15;
+    uint64 index = 1;
+    uint64 attestation_source_reward = 2;
+    uint64 attestation_source_penalty = 3;
+    uint64 attestation_target_reward = 4;
+    uint64 attestation_target_penalty = 5;
+    uint64 attestation_head_reward = 6;
+    uint64 finality_delay_penalty = 7;
+    uint64 proposer_slashing_inclusion_reward = 8;
+    uint64 proposer_attestation_inclusion_reward = 9;
+    uint64 proposer_sync_inclusion_reward = 10;
+    uint64 sync_committee_reward = 11;
+    uint64 sync_committee_penalty = 12;
+    uint64 slashing_reward = 13;
+    uint64 slashing_penalty = 14;
+    bytes tx_fee_reward_wei = 15;
 }

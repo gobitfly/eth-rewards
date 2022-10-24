@@ -21,13 +21,13 @@ import (
 func GetRewardsForEpoch(epoch int, client *beacon.Client, elClient *rpc.Client) (map[uint64]*types.ValidatorEpochIncome, error) {
 	ctx := context.Background()
 
-	startSlot := epoch * 32
+	startSlot := (epoch - 1) * 32
 	endSlot := startSlot + 32
 
 	g := new(errgroup.Group)
 	g.SetLimit(10)
 
-	logrus.Infof("retrieving data for epoch %d (slot %d - %d)", epoch, startSlot, endSlot)
+	logrus.Infof("retrieving data for epoch %d (using slots %d - %d)", epoch, startSlot, endSlot)
 	start := time.Now()
 
 	stateData, err := client.GetState(ctx, beacon.StateOrBlockId(fmt.Sprintf("%d", startSlot)))

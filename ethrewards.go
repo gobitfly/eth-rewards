@@ -22,6 +22,8 @@ import (
 	ptypes "github.com/prysmaticlabs/prysm/v3/consensus-types/primitives"
 )
 
+//63279496740
+//63279173107
 func GetRewardsForEpoch(epoch int, client *beacon.Client, elClient *rpc.Client) (map[uint64]*types.ValidatorEpochIncome, error) {
 	ctx := context.Background()
 
@@ -108,7 +110,7 @@ func GetRewardsForEpoch(epoch int, client *beacon.Client, elClient *rpc.Client) 
 
 		processSlotsDuration := time.Since(start)
 		start = time.Now()
-		if b == nil || b.CLBlock.IsNil() || b.CLBlock.Block().IsNil() || i/32 != epoch-1 {
+		if b == nil || b.CLBlock.IsNil() || b.CLBlock.Block().IsNil() {
 			logrus.WithFields(logrus.Fields{
 				"ProcessSlot": processSlotsDuration,
 				"Total":       processSlotsDuration,

@@ -45,6 +45,6 @@ func main() {
 		totalSize += len(data)
 	}
 
-	logrus.Infof("epoch reward data is %v", totalSize)
-	logrus.Infof("epoch %d: %s", *epoch, income[uint64(123456)].String())
+	logrus.Infof("epoch %d: %s", *epoch, income[uint64(278383)].String())
+	logrus.Infof("epoch %d: %d", *epoch, income[uint64(278383)].TotalClRewards())
 }

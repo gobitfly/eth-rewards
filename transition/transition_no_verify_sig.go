@@ -58,12 +58,6 @@ func ExecuteStateTransitionNoVerifyAnySig(
 	ctx, span := trace.StartSpan(ctx, "core.state.ExecuteStateTransitionNoVerifyAttSigs")
 	defer span.End()
 	var err error
-
-	st, err = ProcessSlotsUsingNextSlotCache(ctx, st, signed.Block().ParentRoot(), signed.Block().Slot(), income)
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "could not process slots")
-	}
-
 	// Execute per block transition.
 	set, st, err := ProcessBlockNoVerifyAnySig(ctx, st, signed, income)
 	if err != nil {

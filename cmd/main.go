@@ -11,6 +11,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// bug with validator 123456 of epoch 130514 on prater (all rewards empty)
 func main() {
 	clNode := flag.String("cl-node", "http://localhost:4000", "CL Node API Endpoint")
 	elNode := flag.String("el-node", "http://localhost:8545", "EL Node API Endpoint")
@@ -45,6 +46,5 @@ func main() {
 	}
 
 	logrus.Infof("epoch reward data is %v", totalSize)
-	logrus.Infof("epoch %d: %s", *epoch, income[uint64(180976)].String())
-	logrus.Infof("epoch %d: %s", *epoch, income[uint64(216267)].String())
+	logrus.Infof("epoch %d: %s", *epoch, income[uint64(123456)].String())
 }

@@ -28,3 +28,21 @@ type TxReceipt struct {
 	TransactionIndex  hexutil.Uint64  `json:"transactionIndex"`
 	Type              hexutil.Uint64  `json:"type"`
 }
+
+func (income *ValidatorEpochIncome) TotalClRewards() int64 {
+	rewards := income.AttestationSourceReward +
+		income.AttestationTargetReward +
+		income.AttestationHeadReward +
+		income.ProposerSlashingInclusionReward +
+		income.ProposerAttestationInclusionReward +
+		income.ProposerSyncInclusionReward +
+		income.SyncCommitteeReward +
+		income.SlashingReward
+
+	penalties := income.AttestationSourcePenalty +
+		income.AttestationTargetPenalty +
+		income.FinalityDelayPenalty +
+		income.SyncCommitteePenalty +
+		income.SlashingPenalty
+	return int64(rewards) - int64(penalties)
+}

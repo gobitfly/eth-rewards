@@ -95,7 +95,7 @@ func GetRewardsForEpoch(epoch int, client *beacon.Client, elClient *rpc.Client) 
 
 	rewards := make(map[uint64]*types.ValidatorEpochIncome)
 	for i := range s.Validators() {
-		rewards[uint64(i)] = &types.ValidatorEpochIncome{Index: uint64(i)}
+		rewards[uint64(i)] = &types.ValidatorEpochIncome{}
 	}
 
 	for i := startSlot + 1; i <= endSlot; i++ {

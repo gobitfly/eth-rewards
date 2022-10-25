@@ -4,7 +4,6 @@ package types;
 option go_package = "./types";
 
 message ValidatorEpochIncome {
-    uint64 index = 1;
     uint64 attestation_source_reward = 2;
     uint64 attestation_source_penalty = 3;
     uint64 attestation_target_reward = 4;

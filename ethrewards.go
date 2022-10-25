@@ -97,7 +97,6 @@ func GetRewardsForEpoch(epoch int, client *beacon.Client, elClient *rpc.Client) 
 	}
 
 	for i := startSlot + 1; i <= endSlot; i++ {
-		logrus.Info(i / 32)
 		b := blocks[i]
 
 		start := time.Now()

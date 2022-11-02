@@ -154,8 +154,6 @@ func ProcessBlockNoVerifyAnySig(
 	signed interfaces.SignedBeaconBlock,
 	income map[uint64]*itypes.ValidatorEpochIncome,
 ) (*bls.SignatureBatch, state.BeaconState, error) {
-	ctx, span := trace.StartSpan(ctx, "core.state.ProcessBlockNoVerifyAnySig")
-	defer span.End()
 	if err := blocks.BeaconBlockIsNil(signed); err != nil {
 		return nil, nil, err
 	}
@@ -172,12 +170,10 @@ func ProcessBlockNoVerifyAnySig(
 
 	bSet, err := b.BlockSignatureBatch(st, blk.ProposerIndex(), signed.Signature(), blk.HashTreeRoot)
 	if err != nil {
-		tracing.AnnotateError(span, err)
 		return nil, nil, errors.Wrap(err, "could not retrieve block signature set")
 	}
 	rSet, err := b.RandaoSignatureBatch(ctx, st, signed.Block().Body().RandaoReveal())
 	if err != nil {
-		tracing.AnnotateError(span, err)
 		return nil, nil, errors.Wrap(err, "could not retrieve randao signature set")
 	}
 	aSet, err := b.AttestationSignatureBatch(ctx, st, signed.Block().Body().Attestations())

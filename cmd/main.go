@@ -7,16 +7,17 @@ import (
 
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/prysmaticlabs/prysm/v3/api/client/beacon"
+	"github.com/prysmaticlabs/prysm/v3/config/params"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
 )
 
-// bug with validator 123456 of epoch 130514 on prater (all rewards empty)
+// bug with epoch 132263 on prater (invalid state root)
 func main() {
 	clNode := flag.String("cl-node", "http://localhost:4000", "CL Node API Endpoint")
 	elNode := flag.String("el-node", "http://localhost:8545", "EL Node API Endpoint")
+	network := flag.String("network", "", "Config to use (can be mainnet, prater or sepolia")
 	epoch := flag.Int("epoch", 1, "Epoch to calculate rewards for")
-
 	flag.Parse()
 
 	client, err := beacon.NewClient(*clNode)
@@ -27,6 +28,14 @@ func main() {
 	elClient, err := rpc.Dial(*elNode)
 	if err != nil {
 		logrus.Fatal(err)
+	}
+	config, err := params.ByName(*network)
+	if err != nil {
+		logrus.Fatalf("no config found for network %v: %v", *network, err)
+	}
+	err = params.SetActive(config)
+	if err != nil {
+		logrus.Fatalf("error setting: %v", err)
 	}
 
 	income, err := ethrewards.GetRewardsForEpoch(*epoch, client, elClient)

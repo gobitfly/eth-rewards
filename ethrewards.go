@@ -16,16 +16,24 @@ import (
 
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/prysmaticlabs/prysm/v3/api/client/beacon"
+	"github.com/prysmaticlabs/prysm/v3/config/params"
 	"github.com/prysmaticlabs/prysm/v3/encoding/ssz/detect"
 	"github.com/sirupsen/logrus"
 
 	ptypes "github.com/prysmaticlabs/prysm/v3/consensus-types/primitives"
 )
 
-//63279496740
-//63279173107
-func GetRewardsForEpoch(epoch int, client *beacon.Client, elClient *rpc.Client) (map[uint64]*types.ValidatorEpochIncome, error) {
+func GetRewardsForEpoch(epoch int, client *beacon.Client, elClient *rpc.Client, network string) (map[uint64]*types.ValidatorEpochIncome, error) {
 	ctx := context.Background()
+
+	config, err := params.ByName(network)
+	if err != nil {
+		return nil, fmt.Errorf("no config found for network %v: %v", network, err)
+	}
+	err = params.SetActive(config)
+	if err != nil {
+		return nil, fmt.Errorf("error setting config: %v", err)
+	}
 
 	startSlot := (epoch - 1) * 32
 	endSlot := startSlot + 32

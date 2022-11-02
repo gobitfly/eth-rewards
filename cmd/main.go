@@ -7,7 +7,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/prysmaticlabs/prysm/v3/api/client/beacon"
-	"github.com/prysmaticlabs/prysm/v3/config/params"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
 )
@@ -29,16 +28,8 @@ func main() {
 	if err != nil {
 		logrus.Fatal(err)
 	}
-	config, err := params.ByName(*network)
-	if err != nil {
-		logrus.Fatalf("no config found for network %v: %v", *network, err)
-	}
-	err = params.SetActive(config)
-	if err != nil {
-		logrus.Fatalf("error setting: %v", err)
-	}
 
-	income, err := ethrewards.GetRewardsForEpoch(*epoch, client, elClient)
+	income, err := ethrewards.GetRewardsForEpoch(*epoch, client, elClient, *network)
 	if err != nil {
 		logrus.Fatal(err)
 	}

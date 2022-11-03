@@ -26,13 +26,12 @@ import (
 func GetRewardsForEpoch(epoch int, client *beacon.Client, elClient *rpc.Client, network string) (map[uint64]*types.ValidatorEpochIncome, error) {
 	ctx := context.Background()
 
-	config, err := params.ByName(network)
-	if err != nil {
-		return nil, fmt.Errorf("no config found for network %v: %v", network, err)
-	}
-	err = params.SetActive(config)
-	if err != nil {
-		return nil, fmt.Errorf("error setting config: %v", err)
+	if network == "sepolia" {
+		params.UseSepoliaNetworkConfig()
+	} else if network == "prater" {
+		params.UsePraterNetworkConfig()
+	} else {
+		params.SetActive(params.MainnetConfig().Copy())
 	}
 
 	startSlot := (epoch - 1) * 32

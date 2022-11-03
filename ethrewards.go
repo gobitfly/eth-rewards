@@ -27,9 +27,9 @@ func GetRewardsForEpoch(epoch int, client *beacon.Client, elClient *rpc.Client, 
 	ctx := context.Background()
 
 	if network == "sepolia" {
-		params.UseSepoliaNetworkConfig()
+		params.SetActive(params.SepoliaConfig().Copy())
 	} else if network == "prater" {
-		params.UsePraterNetworkConfig()
+		params.SetActive(params.PraterConfig().Copy())
 	} else {
 		params.SetActive(params.MainnetConfig().Copy())
 	}

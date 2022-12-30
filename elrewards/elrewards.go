@@ -3,7 +3,6 @@ package elrewards
 import (
 	"context"
 	"fmt"
-	"log"
 	"math/big"
 	"time"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/gobitfly/eth-rewards/types"
 	"github.com/prysmaticlabs/prysm/v3/consensus-types/interfaces"
+	"github.com/sirupsen/logrus"
 )
 
 func GetELRewardForBlock(block interfaces.SignedBeaconBlock, client *rpc.Client) (*big.Int, error) {
@@ -41,14 +41,14 @@ func GetELRewardForBlock(block interfaces.SignedBeaconBlock, client *rpc.Client)
 	}
 
 	var txReceipts []*types.TxReceipt
-	for j := 0; j < 10; j++ { // retry up to 10 times
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	for j := 1; j <= 16; j++ { // retry up to 16 times
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*16)
 		txReceipts, err = batchRequestReceipts(ctx, client, txHashes)
 		if err == nil {
 			cancel()
 			break
 		} else {
-			log.Printf("error doing batchRequestReceipts for slot %v: %v", block.Block().Slot(), err)
+			logrus.Infof("error (%d) doing batchRequestReceipts for slot %v: %v", j, block.Block().Slot(), err)
 			time.Sleep(time.Duration(j) * time.Second)
 		}
 		cancel()

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -17,6 +18,10 @@ import (
 func GetELRewardForBlock(block interfaces.SignedBeaconBlock, client *rpc.Client) (*big.Int, error) {
 	exec, err := block.Block().Body().Execution()
 	if err != nil {
+		if strings.Contains(err.Error(), "Execution is not supported for") {
+			return big.NewInt(0), nil
+		}
+		logrus.Error(err)
 		return nil, err
 	}
 

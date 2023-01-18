@@ -27,7 +27,7 @@ func ProcessAttestationsNoVerifySignature(
 	ctx context.Context,
 	beaconState state.BeaconState,
 	b interfaces.SignedBeaconBlock,
-	income map[uint64]*itypes.ValidatorEpochIncome,
+	income map[uint64]*itypes.ValidatorEpochData,
 ) (state.BeaconState, error) {
 	if err := consensusblocks.BeaconBlockIsNil(b); err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func ProcessAttestationNoVerifySignature(
 	beaconState state.BeaconState,
 	att *ethpb.Attestation,
 	totalBalance uint64,
-	income map[uint64]*itypes.ValidatorEpochIncome,
+	income map[uint64]*itypes.ValidatorEpochData,
 ) (state.BeaconState, error) {
 	ctx, span := trace.StartSpan(ctx, "altair.ProcessAttestationNoVerifySignature")
 	defer span.End()
@@ -110,7 +110,7 @@ func SetParticipationAndRewardProposer(
 	indices []uint64,
 	participatedFlags map[uint8]bool,
 	totalBalance uint64,
-	income map[uint64]*itypes.ValidatorEpochIncome,
+	income map[uint64]*itypes.ValidatorEpochData,
 ) (state.BeaconState, error) {
 	var proposerRewardNumerator uint64
 	currentEpoch := time.CurrentEpoch(beaconState)
@@ -228,7 +228,7 @@ func EpochParticipation(beaconState state.BeaconState, indices []uint64, epochPa
 //    proposer_reward_denominator = (WEIGHT_DENOMINATOR - PROPOSER_WEIGHT) * WEIGHT_DENOMINATOR // PROPOSER_WEIGHT
 //    proposer_reward = Gwei(proposer_reward_numerator // proposer_reward_denominator)
 //    increase_balance(state, get_beacon_proposer_index(state), proposer_reward)
-func RewardProposer(ctx context.Context, beaconState state.BeaconState, proposerRewardNumerator uint64, income map[uint64]*itypes.ValidatorEpochIncome) error {
+func RewardProposer(ctx context.Context, beaconState state.BeaconState, proposerRewardNumerator uint64, income map[uint64]*itypes.ValidatorEpochData) error {
 	cfg := params.BeaconConfig()
 	d := (cfg.WeightDenominator - cfg.ProposerWeight) * cfg.WeightDenominator / cfg.ProposerWeight
 	proposerReward := proposerRewardNumerator / d
@@ -237,7 +237,7 @@ func RewardProposer(ctx context.Context, beaconState state.BeaconState, proposer
 		return err
 	}
 
-	income[uint64(i)].ProposerAttestationInclusionReward += proposerReward
+	income[uint64(i)].IncomeDetails.ProposerAttestationInclusionReward += proposerReward
 	return helpers.IncreaseBalance(beaconState, i, proposerReward)
 }
 

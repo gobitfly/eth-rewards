@@ -46,7 +46,7 @@ func ExecuteStateTransitionNoVerifyAnySig(
 	ctx context.Context,
 	st state.BeaconState,
 	signed interfaces.SignedBeaconBlock,
-	income map[uint64]*types.ValidatorEpochIncome,
+	income map[uint64]*types.ValidatorEpochData,
 ) (*bls.SignatureBatch, state.BeaconState, error) {
 	if ctx.Err() != nil {
 		return nil, nil, ctx.Err()
@@ -102,7 +102,7 @@ func CalculateStateRoot(
 	ctx context.Context,
 	state state.BeaconState,
 	signed interfaces.SignedBeaconBlock,
-	income map[uint64]*itypes.ValidatorEpochIncome,
+	income map[uint64]*itypes.ValidatorEpochData,
 ) ([32]byte, error) {
 	ctx, span := trace.StartSpan(ctx, "core.state.CalculateStateRoot")
 	defer span.End()
@@ -152,7 +152,7 @@ func ProcessBlockNoVerifyAnySig(
 	ctx context.Context,
 	st state.BeaconState,
 	signed interfaces.SignedBeaconBlock,
-	income map[uint64]*itypes.ValidatorEpochIncome,
+	income map[uint64]*itypes.ValidatorEpochData,
 ) (*bls.SignatureBatch, state.BeaconState, error) {
 	if err := blocks.BeaconBlockIsNil(signed); err != nil {
 		return nil, nil, err
@@ -213,7 +213,7 @@ func ProcessOperationsNoVerifyAttsSigs(
 	ctx context.Context,
 	state state.BeaconState,
 	signedBeaconBlock interfaces.SignedBeaconBlock,
-	income map[uint64]*itypes.ValidatorEpochIncome) (state.BeaconState, error) {
+	income map[uint64]*itypes.ValidatorEpochData) (state.BeaconState, error) {
 	ctx, span := trace.StartSpan(ctx, "core.state.ProcessOperationsNoVerifyAttsSigs")
 	defer span.End()
 	if err := blocks.BeaconBlockIsNil(signedBeaconBlock); err != nil {
@@ -259,7 +259,7 @@ func ProcessBlockForStateRoot(
 	ctx context.Context,
 	state state.BeaconState,
 	signed interfaces.SignedBeaconBlock,
-	income map[uint64]*itypes.ValidatorEpochIncome,
+	income map[uint64]*itypes.ValidatorEpochData,
 ) (state.BeaconState, error) {
 	ctx, span := trace.StartSpan(ctx, "core.state.ProcessBlockForStateRoot")
 	defer span.End()
@@ -337,7 +337,7 @@ func altairOperations(
 	ctx context.Context,
 	st state.BeaconState,
 	signedBeaconBlock interfaces.SignedBeaconBlock,
-	income map[uint64]*itypes.ValidatorEpochIncome) (state.BeaconState, error) {
+	income map[uint64]*itypes.ValidatorEpochData) (state.BeaconState, error) {
 	st, err := b.ProcessProposerSlashings(ctx, st, signedBeaconBlock.Block().Body().ProposerSlashings(), v.SlashValidator, income)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not process altair proposer slashing")
@@ -361,7 +361,7 @@ func phase0Operations(
 	ctx context.Context,
 	st state.BeaconState,
 	signedBeaconBlock interfaces.SignedBeaconBlock,
-	income map[uint64]*itypes.ValidatorEpochIncome) (state.BeaconState, error) {
+	income map[uint64]*itypes.ValidatorEpochData) (state.BeaconState, error) {
 	st, err := b.ProcessProposerSlashings(ctx, st, signedBeaconBlock.Block().Body().ProposerSlashings(), v.SlashValidator, income)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not process block proposer slashings")

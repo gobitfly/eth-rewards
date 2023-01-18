@@ -37,7 +37,7 @@ func NextSlotState(_ context.Context, root []byte) (state.BeaconState, error) {
 // by calling `ProcessSlots`, it also saves the input root for later look up.
 // This is useful to call after successfully processing a block.
 func UpdateNextSlotCache(ctx context.Context, root []byte, state state.BeaconState,
-	income map[uint64]*itypes.ValidatorEpochIncome) error {
+	income map[uint64]*itypes.ValidatorEpochData) error {
 	// Advancing one slot by using a copied state.
 	copied := state.Copy()
 	copied, err := ProcessSlots(ctx, copied, copied.Slot()+1, income)

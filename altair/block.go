@@ -47,7 +47,7 @@ import (
 //        else:
 //            decrease_balance(state, participant_index, participant_reward)
 func ProcessSyncAggregate(ctx context.Context, s state.BeaconState, sync *ethpb.SyncAggregate,
-	income map[uint64]*itypes.ValidatorEpochIncome) (state.BeaconState, error) {
+	income map[uint64]*itypes.ValidatorEpochData) (state.BeaconState, error) {
 	votedKeys, votedIndices, didntVoteIndices, err := FilterSyncCommitteeVotes(s, sync)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not filter sync committee votes")
@@ -129,7 +129,7 @@ func VerifySyncCommitteeSig(s state.BeaconState, syncKeys []bls.PublicKey, syncS
 }
 
 // ApplySyncRewardsPenalties applies rewards and penalties for proposer and sync committee participants.
-func ApplySyncRewardsPenalties(ctx context.Context, s state.BeaconState, votedIndices, didntVoteIndices []types.ValidatorIndex, income map[uint64]*itypes.ValidatorEpochIncome) (state.BeaconState, error) {
+func ApplySyncRewardsPenalties(ctx context.Context, s state.BeaconState, votedIndices, didntVoteIndices []types.ValidatorIndex, income map[uint64]*itypes.ValidatorEpochData) (state.BeaconState, error) {
 	activeBalance, err := helpers.TotalActiveBalance(s)
 	if err != nil {
 		return nil, err
@@ -142,7 +142,7 @@ func ApplySyncRewardsPenalties(ctx context.Context, s state.BeaconState, votedIn
 	// Apply sync committee rewards.
 	earnedProposerReward := uint64(0)
 	for _, index := range votedIndices {
-		income[uint64(index)].SyncCommitteeReward += participantReward
+		income[uint64(index)].IncomeDetails.SyncCommitteeReward += participantReward
 		if err := helpers.IncreaseBalance(s, index, participantReward); err != nil {
 			return nil, err
 		}
@@ -153,13 +153,13 @@ func ApplySyncRewardsPenalties(ctx context.Context, s state.BeaconState, votedIn
 	if err != nil {
 		return nil, err
 	}
-	income[uint64(proposerIndex)].ProposerSyncInclusionReward += earnedProposerReward
+	income[uint64(proposerIndex)].IncomeDetails.ProposerSyncInclusionReward += earnedProposerReward
 	if err := helpers.IncreaseBalance(s, proposerIndex, earnedProposerReward); err != nil {
 		return nil, err
 	}
 	// Apply sync committee penalties.
 	for _, index := range didntVoteIndices {
-		income[uint64(index)].SyncCommitteePenalty += participantReward
+		income[uint64(index)].IncomeDetails.SyncCommitteePenalty += participantReward
 		if err := helpers.DecreaseBalance(s, index, participantReward); err != nil {
 			return nil, err
 		}

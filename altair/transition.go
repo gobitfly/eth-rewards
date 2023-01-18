@@ -30,7 +30,7 @@ import (
 //    process_participation_flag_updates(state)  # [New in Altair]
 //    process_sync_committee_updates(state)  # [New in Altair]
 func ProcessEpoch(ctx context.Context, state state.BeaconState,
-	income map[uint64]*itypes.ValidatorEpochIncome) (state.BeaconState, error) {
+	income map[uint64]*itypes.ValidatorEpochData) (state.BeaconState, error) {
 	ctx, span := trace.StartSpan(ctx, "altair.ProcessEpoch")
 	defer span.End()
 

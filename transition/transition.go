@@ -51,7 +51,7 @@ func ExecuteStateTransition(
 	ctx context.Context,
 	state state.BeaconState,
 	signed interfaces.SignedBeaconBlock,
-	income map[uint64]*itypes.ValidatorEpochIncome,
+	income map[uint64]*itypes.ValidatorEpochData,
 ) (state.BeaconState, error) {
 	if ctx.Err() != nil {
 		return nil, ctx.Err()
@@ -139,7 +139,7 @@ func ProcessSlotsUsingNextSlotCache(
 	parentState state.BeaconState,
 	parentRoot []byte,
 	slot types.Slot,
-	income map[uint64]*itypes.ValidatorEpochIncome) (state.BeaconState, error) {
+	income map[uint64]*itypes.ValidatorEpochData) (state.BeaconState, error) {
 	ctx, span := trace.StartSpan(ctx, "core.state.ProcessSlotsUsingNextSlotCache")
 	defer span.End()
 
@@ -172,7 +172,7 @@ func ProcessSlotsUsingNextSlotCache(
 // ProcessSlotsIfPossible executes ProcessSlots on the input state when target slot is above the state's slot.
 // Otherwise, it returns the input state unchanged.
 func ProcessSlotsIfPossible(ctx context.Context, state state.BeaconState, targetSlot types.Slot,
-	income map[uint64]*itypes.ValidatorEpochIncome) (state.BeaconState, error) {
+	income map[uint64]*itypes.ValidatorEpochData) (state.BeaconState, error) {
 	if targetSlot > state.Slot() {
 		return ProcessSlots(ctx, state, targetSlot, income)
 	}
@@ -191,7 +191,7 @@ func ProcessSlotsIfPossible(ctx context.Context, state state.BeaconState, target
 //            process_epoch(state)
 //        state.slot = Slot(state.slot + 1)
 func ProcessSlots(ctx context.Context, state state.BeaconState, slot types.Slot,
-	income map[uint64]*itypes.ValidatorEpochIncome) (state.BeaconState, error) {
+	income map[uint64]*itypes.ValidatorEpochData) (state.BeaconState, error) {
 	ctx, span := trace.StartSpan(ctx, "core.state.ProcessSlots")
 	defer span.End()
 	if state == nil || state.IsNil() {

@@ -17,14 +17,16 @@ import (
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/prysmaticlabs/prysm/v3/api/client/beacon"
 	"github.com/prysmaticlabs/prysm/v3/beacon-chain/core/helpers"
+	"github.com/prysmaticlabs/prysm/v3/beacon-chain/state"
 	"github.com/prysmaticlabs/prysm/v3/config/params"
+	"github.com/prysmaticlabs/prysm/v3/encoding/bytesutil"
 	"github.com/prysmaticlabs/prysm/v3/encoding/ssz/detect"
 	"github.com/sirupsen/logrus"
 
 	ptypes "github.com/prysmaticlabs/prysm/v3/consensus-types/primitives"
 )
 
-func GetRewardsForEpoch(epoch int, client *beacon.Client, elClient *rpc.Client, network string) (map[uint64]*types.ValidatorEpochIncome, error) {
+func GetRewardsForEpoch(epoch int, client *beacon.Client, elClient *rpc.Client, previousState state.BeaconState, network string) (map[uint64]*types.ValidatorEpochData, state.BeaconState, error) {
 	ctx := context.Background()
 
 	if network == "sepolia" {
@@ -35,8 +37,8 @@ func GetRewardsForEpoch(epoch int, client *beacon.Client, elClient *rpc.Client, 
 		params.SetActive(params.MainnetConfig().Copy())
 	}
 
-	startSlot := (epoch - 1) * 32
-	endSlot := startSlot + 32
+	startSlot := epoch * 32
+	endSlot := startSlot + 32 - 1
 
 	g := new(errgroup.Group)
 	g.SetLimit(10)
@@ -44,30 +46,56 @@ func GetRewardsForEpoch(epoch int, client *beacon.Client, elClient *rpc.Client, 
 	logrus.Infof("retrieving data for epoch %d (using slots %d - %d)", epoch, startSlot, endSlot)
 	start := time.Now()
 
-	stateData, err := client.GetState(ctx, beacon.StateOrBlockId(fmt.Sprintf("%d", startSlot)))
-	if err != nil {
-		return nil, err
+	var s state.BeaconState
+
+	if previousState == nil {
+		stateData, err := client.GetState(ctx, beacon.StateOrBlockId(fmt.Sprintf("%d", startSlot)))
+		if err != nil {
+			return nil, nil, err
+		}
+
+		vu, err := detect.FromState(stateData)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		s, err = vu.UnmarshalBeaconState(stateData)
+		if err != nil {
+			return nil, nil, err
+		}
+	} else {
+		s = previousState
 	}
 
-	vu, err := detect.FromState(stateData)
+	vu, err := detect.FromForkVersion(bytesutil.ToBytes4(s.Fork().CurrentVersion))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	s, err := vu.UnmarshalBeaconState(stateData)
+	data := make(map[uint64]*types.ValidatorEpochData, s.NumValidators())
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	_, proposerIndexToSlots, err := helpers.CommitteeAssignments(ctx, s.Copy(), ptypes.Epoch(epoch-1))
+	for i := range s.Validators() {
+		data[uint64(i)] = &types.ValidatorEpochData{
+			IncomeDetails: &types.ValidatorEpochIncome{},
+		}
+	}
+
+	_, proposerIndexToSlots, err := helpers.CommitteeAssignments(ctx, s.Copy(), ptypes.Epoch(epoch))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	slotsToProposerIndex := make(map[uint64]uint64)
 	for validator, slots := range proposerIndexToSlots {
 		for _, slot := range slots {
 			slotsToProposerIndex[uint64(slot)] = uint64(validator)
+			if data[uint64(validator)].Proposals == nil {
+				data[uint64(validator)].Proposals = make(map[uint64]bool, 1)
+			}
+			data[uint64(validator)].Proposals[uint64(slot)] = false
 		}
 	}
 
@@ -108,50 +136,32 @@ func GetRewardsForEpoch(epoch int, client *beacon.Client, elClient *rpc.Client, 
 
 	err = g.Wait()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	logrus.Infof("retrieved epoch data in %v", time.Since(start))
 
-	rewards := make(map[uint64]*types.ValidatorEpochIncome)
-	for i := range s.Validators() {
-		rewards[uint64(i)] = &types.ValidatorEpochIncome{}
-	}
-
 	for i := startSlot + 1; i <= endSlot; i++ {
+		logrus.Infof("processing slot %v", i)
 		b := blocks[i]
 
 		start := time.Now()
 		// Execute epoch transition.
-		s, err = transition.ProcessSlots(ctx, s, ptypes.Slot(i), rewards)
-		if err != nil {
-			return nil, errors.Wrap(err, "could not process slots")
+		if previousState == nil {
+			s, err = transition.ProcessSlots(ctx, s, ptypes.Slot(i), data)
+			if err != nil {
+				return nil, nil, errors.Wrap(err, "could not process slots")
+			}
 		}
 
 		processSlotsDuration := time.Since(start)
 		start = time.Now()
+		proposer, found := slotsToProposerIndex[uint64(i)]
+		if !found {
+			return nil, nil, fmt.Errorf("proposer for slot %v not found, this should never happen", i)
+		}
+
 		if b == nil || b.CLBlock.IsNil() || b.CLBlock.Block().IsNil() {
-			proposer, found := slotsToProposerIndex[uint64(i)]
-			if !found {
-				logrus.Infof("proposer for slot %v not found, loading next epoch proposer assignments", i)
-
-				_, proposerIndexToSlots, err = helpers.CommitteeAssignments(ctx, s.Copy(), ptypes.Epoch(epoch))
-				if err != nil {
-					return nil, err
-				}
-
-				for validator, slots := range proposerIndexToSlots {
-					for _, slot := range slots {
-						slotsToProposerIndex[uint64(slot)] = uint64(validator)
-					}
-				}
-
-				proposer, found = slotsToProposerIndex[uint64(i)]
-				if !found {
-					return nil, fmt.Errorf("proposer for slot %v not found", i)
-				}
-				rewards[proposer].ProposalsMissed++
-			}
 			logrus.Infof("validator %v missed slot %v", proposer, i)
 			logrus.WithFields(logrus.Fields{
 				"ProcessSlot": processSlotsDuration,
@@ -160,10 +170,13 @@ func GetRewardsForEpoch(epoch int, client *beacon.Client, elClient *rpc.Client, 
 			continue
 		}
 
+		// mark the block as proposed
+		data[slotsToProposerIndex[uint64(i)]].Proposals[uint64(i)] = true
+
 		// Execute per block transition.
-		_, s, err = transition.ProcessBlockNoVerifyAnySig(ctx, s, b.CLBlock, rewards)
+		_, s, err = transition.ProcessBlockNoVerifyAnySig(ctx, s, b.CLBlock, data)
 		if err != nil {
-			return nil, errors.Wrap(err, "could not process block")
+			return nil, nil, errors.Wrap(err, "could not process block")
 		}
 		processBlockNoVerifyAnySigDuration := time.Since(start)
 		start = time.Now()
@@ -171,16 +184,16 @@ func GetRewardsForEpoch(epoch int, client *beacon.Client, elClient *rpc.Client, 
 		// State root validation.
 		postStateRoot, err := s.HashTreeRoot(ctx)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		if !bytes.Equal(postStateRoot[:], b.CLBlock.Block().StateRoot()) {
-			return nil, fmt.Errorf("could not validate state root, wanted: %#x, received: %#x",
+			return nil, nil, fmt.Errorf("could not validate state root, wanted: %#x, received: %#x",
 				postStateRoot[:], b.CLBlock.Block().StateRoot())
 		}
 
 		stateRootValidationDuration := time.Since(start)
 
-		rewards[uint64(b.CLBlock.Block().ProposerIndex())].TxFeeRewardWei = b.TxFeeRewardWei.Bytes()
+		data[uint64(b.CLBlock.Block().ProposerIndex())].IncomeDetails.TxFeeRewardWei = b.TxFeeRewardWei.Bytes()
 
 		logrus.WithFields(logrus.Fields{
 			"ProcessSlot":                processSlotsDuration,
@@ -190,5 +203,11 @@ func GetRewardsForEpoch(epoch int, client *beacon.Client, elClient *rpc.Client, 
 		}).Infof("processed state transition for slot %v", i)
 	}
 
-	return rewards, nil
+	// Execute epoch transition.
+	s, err = transition.ProcessSlots(ctx, s, ptypes.Slot(endSlot+1), data)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "could not process slots")
+	}
+
+	return data, s, nil
 }

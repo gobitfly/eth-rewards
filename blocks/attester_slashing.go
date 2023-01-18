@@ -43,7 +43,7 @@ func ProcessAttesterSlashings(
 	beaconState state.BeaconState,
 	slashings []*ethpb.AttesterSlashing,
 	slashFunc slashValidatorFunc,
-	income map[uint64]*itypes.ValidatorEpochIncome,
+	income map[uint64]*itypes.ValidatorEpochData,
 ) (state.BeaconState, error) {
 	var err error
 	for _, slashing := range slashings {
@@ -61,7 +61,7 @@ func ProcessAttesterSlashing(
 	beaconState state.BeaconState,
 	slashing *ethpb.AttesterSlashing,
 	slashFunc slashValidatorFunc,
-	income map[uint64]*itypes.ValidatorEpochIncome,
+	income map[uint64]*itypes.ValidatorEpochData,
 ) (state.BeaconState, error) {
 	if err := VerifyAttesterSlashing(ctx, beaconState, slashing); err != nil {
 		return nil, errors.Wrap(err, "could not verify attester slashing")

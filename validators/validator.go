@@ -144,7 +144,7 @@ func SlashValidator(
 	slashedIdx types.ValidatorIndex,
 	penaltyQuotient uint64,
 	proposerRewardQuotient uint64,
-	income map[uint64]*itypes.ValidatorEpochIncome) (state.BeaconState, error) {
+	income map[uint64]*itypes.ValidatorEpochData) (state.BeaconState, error) {
 	s, err := InitiateValidatorExit(ctx, s, slashedIdx)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not initiate validator %d exit", slashedIdx)
@@ -172,7 +172,7 @@ func SlashValidator(
 		return nil, err
 	}
 
-	income[uint64(slashedIdx)].SlashingPenalty += validator.EffectiveBalance / penaltyQuotient
+	income[uint64(slashedIdx)].IncomeDetails.SlashingPenalty += validator.EffectiveBalance / penaltyQuotient
 	if err := helpers.DecreaseBalance(s, slashedIdx, validator.EffectiveBalance/penaltyQuotient); err != nil {
 		return nil, err
 	}
@@ -186,12 +186,12 @@ func SlashValidator(
 	whistleblowerReward := validator.EffectiveBalance / params.BeaconConfig().WhistleBlowerRewardQuotient
 	proposerReward := whistleblowerReward / proposerRewardQuotient
 
-	income[uint64(proposerIdx)].ProposerSlashingInclusionReward += proposerReward
+	income[uint64(proposerIdx)].IncomeDetails.ProposerSlashingInclusionReward += proposerReward
 	err = helpers.IncreaseBalance(s, proposerIdx, proposerReward)
 	if err != nil {
 		return nil, err
 	}
-	income[uint64(whistleBlowerIdx)].SlashingReward += whistleblowerReward - proposerReward
+	income[uint64(whistleBlowerIdx)].IncomeDetails.SlashingReward += whistleblowerReward - proposerReward
 	err = helpers.IncreaseBalance(s, whistleBlowerIdx, whistleblowerReward-proposerReward)
 	if err != nil {
 		return nil, err

@@ -46,3 +46,12 @@ func (income *ValidatorEpochIncome) TotalClRewards() int64 {
 		income.SlashingPenalty
 	return int64(rewards) - int64(penalties)
 }
+
+type ValidatorEpochData struct {
+	Proposals        map[uint64]bool       // slot, true = proposed, false = missed
+	SyncDuties       map[uint64]bool       // slot, true = duty done, false = missed
+	Attestations     map[uint64]uint64     // slot the validator attested for, slot the attestation was included
+	Balance          uint64                // balance of the validator at the start of the epoch
+	EffectiveBalance uint64                // effective balance of the validator at the start of the epoch
+	IncomeDetails    *ValidatorEpochIncome // income details of the validator during the epoch
+}

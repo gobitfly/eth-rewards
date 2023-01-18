@@ -214,7 +214,7 @@ func ProcessRewardsAndPenaltiesPrecompute(
 	beaconState state.BeaconState,
 	bal *precompute.Balance,
 	vals []*precompute.Validator,
-	income map[uint64]*itypes.ValidatorEpochIncome,
+	income map[uint64]*itypes.ValidatorEpochData,
 ) (state.BeaconState, error) {
 	// Don't process rewards and penalties in genesis epoch.
 	cfg := params.BeaconConfig()
@@ -260,7 +260,7 @@ func ProcessRewardsAndPenaltiesPrecompute(
 func AttestationsDelta(beaconState state.BeaconState,
 	bal *precompute.Balance,
 	vals []*precompute.Validator,
-	income map[uint64]*itypes.ValidatorEpochIncome,
+	income map[uint64]*itypes.ValidatorEpochData,
 ) (rewards, penalties []uint64, err error) {
 	numOfVals := beaconState.NumValidators()
 	rewards = make([]uint64, numOfVals)
@@ -296,7 +296,7 @@ func attestationDelta(index int,
 	bal *precompute.Balance,
 	val *precompute.Validator,
 	baseRewardMultiplier, inactivityDenominator uint64,
-	inactivityLeak bool, income map[uint64]*itypes.ValidatorEpochIncome) (reward, penalty uint64, err error) {
+	inactivityLeak bool, income map[uint64]*itypes.ValidatorEpochData) (reward, penalty uint64, err error) {
 	eligible := val.IsActivePrevEpoch || (val.IsSlashed && !val.IsWithdrawableCurrentEpoch)
 	// Per spec `ActiveCurrentEpoch` can't be 0 to process attestation delta.
 	if !eligible || bal.ActiveCurrentEpoch == 0 {
@@ -319,11 +319,11 @@ func attestationDelta(index int,
 		if !inactivityLeak {
 			n := baseReward * srcWeight * (bal.PrevEpochAttested / increment)
 			reward += n / (activeIncrement * weightDenominator)
-			income[uint64(index)].AttestationSourceReward += n / (activeIncrement * weightDenominator)
+			income[uint64(index)].IncomeDetails.AttestationSourceReward += n / (activeIncrement * weightDenominator)
 		}
 	} else {
 		penalty += baseReward * srcWeight / weightDenominator
-		income[uint64(index)].AttestationSourcePenalty += baseReward * srcWeight / weightDenominator
+		income[uint64(index)].IncomeDetails.AttestationSourcePenalty += baseReward * srcWeight / weightDenominator
 	}
 
 	// Process target reward / penalty
@@ -331,11 +331,11 @@ func attestationDelta(index int,
 		if !inactivityLeak {
 			n := baseReward * tgtWeight * (bal.PrevEpochTargetAttested / increment)
 			reward += n / (activeIncrement * weightDenominator)
-			income[uint64(index)].AttestationTargetReward += n / (activeIncrement * weightDenominator)
+			income[uint64(index)].IncomeDetails.AttestationTargetReward += n / (activeIncrement * weightDenominator)
 		}
 	} else {
 		penalty += baseReward * tgtWeight / weightDenominator
-		income[uint64(index)].AttestationTargetPenalty += baseReward * tgtWeight / weightDenominator
+		income[uint64(index)].IncomeDetails.AttestationTargetPenalty += baseReward * tgtWeight / weightDenominator
 	}
 
 	// Process head reward / penalty
@@ -343,7 +343,7 @@ func attestationDelta(index int,
 		if !inactivityLeak {
 			n := baseReward * headWeight * (bal.PrevEpochHeadAttested / increment)
 			reward += n / (activeIncrement * weightDenominator)
-			income[uint64(index)].AttestationHeadReward += n / (activeIncrement * weightDenominator)
+			income[uint64(index)].IncomeDetails.AttestationHeadReward += n / (activeIncrement * weightDenominator)
 		}
 	}
 
@@ -355,7 +355,7 @@ func attestationDelta(index int,
 			return 0, 0, err
 		}
 		penalty += n / inactivityDenominator
-		income[uint64(index)].FinalityDelayPenalty += n / inactivityDenominator
+		income[uint64(index)].IncomeDetails.FinalityDelayPenalty += n / inactivityDenominator
 	}
 
 	return reward, penalty, nil

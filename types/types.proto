@@ -18,4 +18,5 @@ message ValidatorEpochIncome {
     uint64 slashing_reward = 13;
     uint64 slashing_penalty = 14;
     bytes tx_fee_reward_wei = 15;
+    uint64 proposals_missed = 16;
 }

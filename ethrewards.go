@@ -16,6 +16,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/prysmaticlabs/prysm/v3/api/client/beacon"
+	"github.com/prysmaticlabs/prysm/v3/beacon-chain/core/helpers"
 	"github.com/prysmaticlabs/prysm/v3/config/params"
 	"github.com/prysmaticlabs/prysm/v3/encoding/ssz/detect"
 	"github.com/sirupsen/logrus"
@@ -56,6 +57,18 @@ func GetRewardsForEpoch(epoch int, client *beacon.Client, elClient *rpc.Client, 
 	s, err := vu.UnmarshalBeaconState(stateData)
 	if err != nil {
 		return nil, err
+	}
+
+	_, proposerIndexToSlots, err := helpers.CommitteeAssignments(ctx, s.Copy(), ptypes.Epoch(epoch-1))
+	if err != nil {
+		return nil, err
+	}
+
+	slotsToProposerIndex := make(map[uint64]uint64)
+	for validator, slots := range proposerIndexToSlots {
+		for _, slot := range slots {
+			slotsToProposerIndex[uint64(slot)] = uint64(validator)
+		}
 	}
 
 	blocks := make(map[int]*types.BlockData)
@@ -118,6 +131,28 @@ func GetRewardsForEpoch(epoch int, client *beacon.Client, elClient *rpc.Client, 
 		processSlotsDuration := time.Since(start)
 		start = time.Now()
 		if b == nil || b.CLBlock.IsNil() || b.CLBlock.Block().IsNil() {
+			proposer, found := slotsToProposerIndex[uint64(i)]
+			if !found {
+				logrus.Infof("proposer for slot %v not found, loading next epoch proposer assignments", i)
+
+				_, proposerIndexToSlots, err = helpers.CommitteeAssignments(ctx, s.Copy(), ptypes.Epoch(epoch))
+				if err != nil {
+					return nil, err
+				}
+
+				for validator, slots := range proposerIndexToSlots {
+					for _, slot := range slots {
+						slotsToProposerIndex[uint64(slot)] = uint64(validator)
+					}
+				}
+
+				proposer, found = slotsToProposerIndex[uint64(i)]
+				if !found {
+					return nil, fmt.Errorf("proposer for slot %v not found", i)
+				}
+				rewards[proposer].ProposalsMissed++
+			}
+			logrus.Infof("validator %v missed slot %v", proposer, i)
 			logrus.WithFields(logrus.Fields{
 				"ProcessSlot": processSlotsDuration,
 				"Total":       processSlotsDuration,

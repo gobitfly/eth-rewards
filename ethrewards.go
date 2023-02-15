@@ -103,8 +103,6 @@ func GetRewardsForEpoch(epoch uint64, client *beacon.Client, elEndpoint string) 
 			rewards[blockRewards.Data.ProposerIndex].ProposerSlashingInclusionReward = blockRewards.Data.AttesterSlashings + blockRewards.Data.ProposerSlashings
 			rewards[blockRewards.Data.ProposerIndex].ProposerSyncInclusionReward = blockRewards.Data.SyncAggregate
 			rewardsMux.Unlock()
-
-			logrus.Infof("processed rewards for slot %v", i)
 			return nil
 		})
 	}
@@ -142,7 +140,6 @@ func GetRewardsForEpoch(epoch uint64, client *beacon.Client, elEndpoint string) 
 		}
 		rewardsMux.Unlock()
 
-		logrus.Infof("processed attestation rewards")
 		return nil
 	})
 

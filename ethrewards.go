@@ -41,25 +41,36 @@ func GetRewardsForEpoch(epoch uint64, client *beacon.Client, elEndpoint string) 
 		i := i
 
 		g.Go(func() error {
+			proposer, found := slotsToProposerIndex[i]
+			if !found {
+				return fmt.Errorf("assigned proposer for slot %v not found", i)
+			}
+
 			execBlockNumber, err := client.ExecutionBlockNumber(i)
+			rewardsMux.Lock()
+			if rewards[i] == nil {
+				rewards[proposer] = &types.ValidatorEpochIncome{}
+			}
+			rewardsMux.Unlock()
 			if err != nil {
 				if err.Error() == "http request error: 404 Not Found" {
-
-					proposer, found := slotsToProposerIndex[i]
-					if !found {
-						return fmt.Errorf("assigned proposer for slot %v not found", i)
-					}
 					rewardsMux.Lock()
-					if rewards[i] == nil {
-						rewards[proposer] = &types.ValidatorEpochIncome{}
-					}
 					rewards[proposer].ProposalsMissed += 1
 					rewardsMux.Unlock()
 					return nil
-				} else {
+				} else if err.Error() != "slot is pre merge" { // ignore
 					logrus.Errorf("error retrieving execution block number for slot %v: %v", i, err)
 					return err
 				}
+			} else {
+				txFeeIncome, err := elrewards.GetELRewardForBlock(execBlockNumber, elEndpoint)
+				if err != nil {
+					return err
+				}
+
+				rewardsMux.Lock()
+				rewards[proposer].TxFeeRewardWei = txFeeIncome.Bytes()
+				rewardsMux.Unlock()
 			}
 
 			syncRewards, err := client.SyncCommitteeRewards(i)
@@ -68,11 +79,6 @@ func GetRewardsForEpoch(epoch uint64, client *beacon.Client, elEndpoint string) 
 			}
 
 			blockRewards, err := client.BlockRewards(i)
-			if err != nil {
-				return err
-			}
-
-			txFeeIncome, err := elrewards.GetELRewardForBlock(execBlockNumber, elEndpoint)
 			if err != nil {
 				return err
 			}
@@ -96,9 +102,9 @@ func GetRewardsForEpoch(epoch uint64, client *beacon.Client, elEndpoint string) 
 			rewards[blockRewards.Data.ProposerIndex].ProposerAttestationInclusionReward = blockRewards.Data.Attestations
 			rewards[blockRewards.Data.ProposerIndex].ProposerSlashingInclusionReward = blockRewards.Data.AttesterSlashings + blockRewards.Data.ProposerSlashings
 			rewards[blockRewards.Data.ProposerIndex].ProposerSyncInclusionReward = blockRewards.Data.SyncAggregate
-			rewards[blockRewards.Data.ProposerIndex].TxFeeRewardWei = txFeeIncome.Bytes()
 			rewardsMux.Unlock()
 
+			logrus.Infof("processed rewards for slot %v", i)
 			return nil
 		})
 	}
@@ -135,6 +141,8 @@ func GetRewardsForEpoch(epoch uint64, client *beacon.Client, elEndpoint string) 
 			}
 		}
 		rewardsMux.Unlock()
+
+		logrus.Infof("processed attestation rewards")
 		return nil
 	})
 

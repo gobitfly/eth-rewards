@@ -155,5 +155,9 @@ func (c *Client) ExecutionBlockNumber(slot uint64) (uint64, error) {
 		return 0, err
 	}
 
+	if r.Data.Message.Body.ExecutionPayload.BlockNumber == "" { // slot if pre merge
+		return 0, fmt.Errorf("slot is pre merge")
+	}
+
 	return strconv.ParseUint(r.Data.Message.Body.ExecutionPayload.BlockNumber, 10, 64)
 }

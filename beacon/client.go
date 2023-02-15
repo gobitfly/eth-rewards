@@ -63,6 +63,9 @@ func (c *Client) SyncCommitteeRewards(slot uint64) (*types.SyncCommitteeRewardsA
 	}
 
 	if resp.StatusCode != 200 {
+		if resp.StatusCode == 404 {
+			return nil, types.ErrBlockNotFound
+		}
 		return nil, fmt.Errorf("http request error: %s", resp.Status)
 	}
 
@@ -86,6 +89,9 @@ func (c *Client) BlockRewards(slot uint64) (*types.BlockRewardsApiResponse, erro
 	}
 
 	if resp.StatusCode != 200 {
+		if resp.StatusCode == 404 {
+			return nil, types.ErrBlockNotFound
+		}
 		return nil, fmt.Errorf("http request error: %s", resp.Status)
 	}
 
@@ -132,7 +138,6 @@ func (c *Client) ExecutionBlockNumber(slot uint64) (uint64, error) {
 	}
 
 	if resp.StatusCode != 200 {
-
 		if resp.StatusCode == 404 {
 			return 0, types.ErrBlockNotFound
 		}

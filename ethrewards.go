@@ -26,8 +26,6 @@ func GetRewardsForEpoch(epoch uint64, client *beacon.Client, elEndpoint string) 
 	g := new(errgroup.Group)
 	g.SetLimit(32)
 
-	logrus.Infof("retrieving data for epoch %d (using slots %d - %d)", epoch, startSlot, endSlot)
-
 	slotsToProposerIndex := make(map[uint64]uint64)
 	for _, pa := range proposerAssignments.Data {
 		slotsToProposerIndex[uint64(pa.Slot)] = uint64(pa.ValidatorIndex)

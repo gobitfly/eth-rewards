@@ -1,6 +1,7 @@
 package ethrewards
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/gobitfly/eth-rewards/beacon"
@@ -23,7 +24,7 @@ func GetRewardsForEpoch(epoch uint64, client *beacon.Client, elEndpoint string) 
 	endSlot := startSlot + slotsPerEpoch - 1
 
 	g := new(errgroup.Group)
-	g.SetLimit(10)
+	g.SetLimit(32)
 
 	logrus.Infof("retrieving data for epoch %d (using slots %d - %d)", epoch, startSlot, endSlot)
 
@@ -42,8 +43,23 @@ func GetRewardsForEpoch(epoch uint64, client *beacon.Client, elEndpoint string) 
 		g.Go(func() error {
 			execBlockNumber, err := client.ExecutionBlockNumber(i)
 			if err != nil {
-				logrus.Errorf("error retrieving execution block number for slot %v: %v", i, err)
-				return err
+				if err.Error() == "http request error: 404 Not Found" {
+
+					proposer, found := slotsToProposerIndex[i]
+					if !found {
+						return fmt.Errorf("assigned proposer for slot %v not found", i)
+					}
+					rewardsMux.Lock()
+					if rewards[i] == nil {
+						rewards[proposer] = &types.ValidatorEpochIncome{}
+					}
+					rewards[proposer].ProposalsMissed += 1
+					rewardsMux.Unlock()
+					return nil
+				} else {
+					logrus.Errorf("error retrieving execution block number for slot %v: %v", i, err)
+					return err
+				}
 			}
 
 			syncRewards, err := client.SyncCommitteeRewards(i)

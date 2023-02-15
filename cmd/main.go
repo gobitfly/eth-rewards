@@ -9,7 +9,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// bug with epoch 132263 on prater (invalid state root)
 func main() {
 	clNode := flag.String("cl-node", "http://localhost:4000", "CL Node API Endpoint")
 	elNode := flag.String("el-node", "http://localhost:8545", "EL Node API Endpoint")
@@ -25,6 +24,6 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	logrus.Infof("epoch %d: %s", *epoch, rewards[uint64(1200)].String())
-	logrus.Infof("epoch %d: %d", *epoch, rewards[uint64(1200)].TotalClRewards())
+	logrus.Infof("epoch %d: %s", *epoch, rewards[uint64(169913)].String())
+	logrus.Infof("epoch %d: %d", *epoch, rewards[uint64(169913)].TotalClRewards())
 }

@@ -111,13 +111,16 @@ func GetRewardsForEpoch(epoch uint64, client *beacon.Client, elEndpoint string) 
 			return err
 		}
 		rewardsMux.Lock()
+		defer rewardsMux.Unlock()
 		for _, ar := range ar.Data.TotalRewards {
 			if rewards[ar.ValidatorIndex] == nil {
 				rewards[ar.ValidatorIndex] = &types.ValidatorEpochIncome{}
 			}
 
-			if ar.Head > 0 {
+			if ar.Head >= 0 {
 				rewards[ar.ValidatorIndex].AttestationHeadReward = uint64(ar.Head)
+			} else {
+				return fmt.Errorf("retrieved negative attestation head reward for validator %v: %v", ar.ValidatorIndex, ar.Head)
 			}
 
 			if ar.Source > 0 {
@@ -132,11 +135,12 @@ func GetRewardsForEpoch(epoch uint64, client *beacon.Client, elEndpoint string) 
 				rewards[ar.ValidatorIndex].AttestationTargetPenalty = uint64(ar.Target * -1)
 			}
 
-			if ar.InclusionDelay < 0 {
+			if ar.InclusionDelay <= 0 {
 				rewards[ar.ValidatorIndex].FinalityDelayPenalty = uint64(ar.InclusionDelay * -1)
+			} else {
+				return fmt.Errorf("retrieved positive inclusion delay penalty for validator %v: %v", ar.ValidatorIndex, ar.InclusionDelay)
 			}
 		}
-		rewardsMux.Unlock()
 
 		return nil
 	})

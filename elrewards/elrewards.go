@@ -7,60 +7,61 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
-	gethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/gobitfly/eth-rewards/types"
-	"github.com/prysmaticlabs/prysm/v3/consensus-types/interfaces"
 	"github.com/sirupsen/logrus"
 )
 
-func GetELRewardForBlock(block interfaces.SignedBeaconBlock, client *rpc.Client) (*big.Int, error) {
-	exec, err := block.Block().Body().Execution()
+func GetELRewardForBlock(executionBlockNumber uint64, endpoint string) (*big.Int, error) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+	defer cancel()
+
+	rpcClient, err := rpc.Dial(endpoint)
+	if err != nil {
+		return nil, err
+	}
+	nativeClient, err := ethclient.Dial(endpoint)
 	if err != nil {
 		return nil, err
 	}
 
-	txs, err := exec.Transactions()
-
+	block, err := nativeClient.BlockByNumber(ctx, big.NewInt(int64(executionBlockNumber)))
 	if err != nil {
 		return nil, err
 	}
 
-	if len(txs) == 0 {
+	if len(block.Transactions()) == 0 {
 		return big.NewInt(0), nil
 	}
 
 	txHashes := []common.Hash{}
-	for _, tx := range txs {
-		var decTx gethTypes.Transaction
-		err := decTx.UnmarshalBinary([]byte(tx))
-		if err != nil {
-			return nil, err
-		}
-		txHashes = append(txHashes, decTx.Hash())
+	for _, tx := range block.Transactions() {
+		txHashes = append(txHashes, tx.Hash())
 	}
 
 	var txReceipts []*types.TxReceipt
 	for j := 1; j <= 16; j++ { // retry up to 16 times
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*16)
-		txReceipts, err = batchRequestReceipts(ctx, client, txHashes)
+		txReceipts, err = batchRequestReceipts(ctx, rpcClient, txHashes)
 		if err == nil {
 			cancel()
 			break
 		} else {
-			logrus.Infof("error (%d) doing batchRequestReceipts for slot %v: %v", j, block.Block().Slot(), err)
+			logrus.Infof("error (%d) doing batchRequestReceipts for execution block %v: %v", j, executionBlockNumber, err)
 			time.Sleep(time.Duration(j) * time.Second)
 		}
 		cancel()
 	}
 	if err != nil {
-		return nil, fmt.Errorf("error doing batchRequestReceipts for slot %v: %w", block.Block().Slot(), err)
+		return nil, fmt.Errorf("error doing batchRequestReceipts for execution block %v: %w", executionBlockNumber, err)
 	}
 
 	totalTxFee := big.NewInt(0)
 	for _, r := range txReceipts {
 		if r.EffectiveGasPrice == nil {
-			return nil, fmt.Errorf("no EffectiveGasPrice for slot %v: %v", block.Block().Slot(), txHashes)
+			return nil, fmt.Errorf("no EffectiveGasPrice for execution block %v: %v", executionBlockNumber, txHashes)
 		}
 		txFee := new(big.Int).Mul(r.EffectiveGasPrice.ToInt(), new(big.Int).SetUint64(uint64(r.GasUsed)))
 		totalTxFee.Add(totalTxFee, txFee)
@@ -68,12 +69,8 @@ func GetELRewardForBlock(block interfaces.SignedBeaconBlock, client *rpc.Client)
 
 	// base fee per gas is stored little-endian but we need it
 	// big-endian for big.Int.
-	var baseFeePerGasBEBytes [32]byte
-	for i := 0; i < 32; i++ {
-		baseFeePerGasBEBytes[i] = exec.BaseFeePerGas()[32-1-i]
-	}
-	baseFeePerGas := new(big.Int).SetBytes(baseFeePerGasBEBytes[:])
-	burntFee := new(big.Int).Mul(baseFeePerGas, new(big.Int).SetUint64(exec.GasUsed()))
+
+	burntFee := new(big.Int).Mul(block.BaseFee(), new(big.Int).SetUint64(block.GasUsed()))
 
 	totalTxFee.Sub(totalTxFee, burntFee)
 

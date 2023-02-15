@@ -2,11 +2,15 @@ package types
 
 import (
 	"encoding/json"
+	"errors"
 	"strconv"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
+
+var ErrBlockNotFound = errors.New("block not found")
+var ErrSlotPreMerge = errors.New("slot is pre merge")
 
 type TxReceipt struct {
 	BlockHash         *common.Hash    `json:"blockHash"`

@@ -53,12 +53,12 @@ func GetRewardsForEpoch(epoch uint64, client *beacon.Client, elEndpoint string) 
 			}
 			rewardsMux.Unlock()
 			if err != nil {
-				if err.Error() == "http request error: 404 Not Found" {
+				if err == types.ErrBlockNotFound {
 					rewardsMux.Lock()
 					rewards[proposer].ProposalsMissed += 1
 					rewardsMux.Unlock()
 					return nil
-				} else if err.Error() != "slot is pre merge" { // ignore
+				} else if err != types.ErrSlotPreMerge { // ignore
 					logrus.Errorf("error retrieving execution block number for slot %v: %v", i, err)
 					return err
 				}

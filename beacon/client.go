@@ -132,6 +132,10 @@ func (c *Client) ExecutionBlockNumber(slot uint64) (uint64, error) {
 	}
 
 	if resp.StatusCode != 200 {
+
+		if resp.StatusCode == 404 {
+			return 0, types.ErrBlockNotFound
+		}
 		return 0, fmt.Errorf("http request error: %s", resp.Status)
 	}
 
@@ -156,7 +160,7 @@ func (c *Client) ExecutionBlockNumber(slot uint64) (uint64, error) {
 	}
 
 	if r.Data.Message.Body.ExecutionPayload.BlockNumber == "" { // slot if pre merge
-		return 0, fmt.Errorf("slot is pre merge")
+		return 0, types.ErrSlotPreMerge
 	}
 
 	return strconv.ParseUint(r.Data.Message.Body.ExecutionPayload.BlockNumber, 10, 64)

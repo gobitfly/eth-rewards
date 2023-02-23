@@ -11,6 +11,7 @@ import (
 
 var ErrBlockNotFound = errors.New("block not found")
 var ErrSlotPreMerge = errors.New("slot is pre merge")
+var ErrSlotPreSyncCommittees = errors.New("slot is pre sync committees")
 
 type TxReceipt struct {
 	BlockHash         *common.Hash    `json:"blockHash"`

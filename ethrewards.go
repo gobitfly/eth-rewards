@@ -73,25 +73,32 @@ func GetRewardsForEpoch(epoch uint64, client *beacon.Client, elEndpoint string) 
 
 			syncRewards, err := client.SyncCommitteeRewards(i)
 			if err != nil {
-				return err
-			}
-
-			blockRewards, err := client.BlockRewards(i)
-			if err != nil {
-				return err
+				if err != types.ErrSlotPreSyncCommittees {
+					return err
+				}
 			}
 
 			rewardsMux.Lock()
-			for _, sr := range syncRewards.Data {
-				if rewards[sr.ValidatorIndex] == nil {
-					rewards[sr.ValidatorIndex] = &types.ValidatorEpochIncome{}
-				}
+			if syncRewards != nil {
+				for _, sr := range syncRewards.Data {
+					if rewards[sr.ValidatorIndex] == nil {
+						rewards[sr.ValidatorIndex] = &types.ValidatorEpochIncome{}
+					}
 
-				if sr.Reward > 0 {
-					rewards[sr.ValidatorIndex].SyncCommitteeReward = uint64(sr.Reward)
-				} else {
-					rewards[sr.ValidatorIndex].SyncCommitteePenalty = uint64(sr.Reward * -1)
+					if sr.Reward > 0 {
+						rewards[sr.ValidatorIndex].SyncCommitteeReward = uint64(sr.Reward)
+					} else {
+						rewards[sr.ValidatorIndex].SyncCommitteePenalty = uint64(sr.Reward * -1)
+					}
 				}
+			}
+			rewardsMux.Unlock()
+
+			rewardsMux.Lock()
+			blockRewards, err := client.BlockRewards(i)
+			if err != nil {
+				rewardsMux.Unlock()
+				return err
 			}
 
 			if rewards[blockRewards.Data.ProposerIndex] == nil {

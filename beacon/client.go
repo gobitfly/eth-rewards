@@ -66,6 +66,9 @@ func (c *Client) SyncCommitteeRewards(slot uint64) (*types.SyncCommitteeRewardsA
 		if resp.StatusCode == 404 {
 			return nil, types.ErrBlockNotFound
 		}
+		if resp.StatusCode == 500 {
+			return nil, types.ErrSlotPreSyncCommittees
+		}
 		return nil, fmt.Errorf("http request error: %s", resp.Status)
 	}
 

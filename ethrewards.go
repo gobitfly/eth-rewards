@@ -46,7 +46,7 @@ func GetRewardsForEpoch(epoch uint64, client *beacon.Client, elEndpoint string) 
 
 			execBlockNumber, err := client.ExecutionBlockNumber(i)
 			rewardsMux.Lock()
-			if rewards[i] == nil {
+			if rewards[proposer] == nil {
 				rewards[proposer] = &types.ValidatorEpochIncome{}
 			}
 			rewardsMux.Unlock()

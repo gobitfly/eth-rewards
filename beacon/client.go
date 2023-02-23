@@ -37,6 +37,7 @@ func (c *Client) AttestationRewards(epoch uint64) (*types.AttestationRewardsApiR
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("http request error: %s", resp.Status)
@@ -61,6 +62,7 @@ func (c *Client) SyncCommitteeRewards(slot uint64) (*types.SyncCommitteeRewardsA
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		if resp.StatusCode == 404 {
@@ -90,6 +92,7 @@ func (c *Client) BlockRewards(slot uint64) (*types.BlockRewardsApiResponse, erro
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		if resp.StatusCode == 404 {
@@ -116,6 +119,7 @@ func (c *Client) ProposerAssignments(epoch uint64) (*types.EpochProposerAssignme
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("http request error: %s", resp.Status)
@@ -139,6 +143,7 @@ func (c *Client) ExecutionBlockNumber(slot uint64) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		if resp.StatusCode == 404 {

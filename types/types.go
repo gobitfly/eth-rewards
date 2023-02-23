@@ -78,8 +78,8 @@ func (a *AttestationRewardsApiResponse) UnmarshalJSON(data []byte) error {
 			} `json:"ideal_rewards"`
 			TotalRewards []struct {
 				Head           string `json:"head"`
-				Source         int64  `json:"source"`
-				Target         int64  `json:"target"`
+				Source         string `json:"source"`
+				Target         string `json:"target"`
 				InclusionDelay string `json:"inclusion_delay"`
 				ValidatorIndex string `json:"validator_index"`
 			} `json:"total_rewards"`
@@ -135,9 +135,15 @@ func (a *AttestationRewardsApiResponse) UnmarshalJSON(data []byte) error {
 			return err
 		}
 
-		p.Source = r.Source
+		p.Source, err = strconv.ParseInt(r.Source, 10, 64)
+		if err != nil {
+			return err
+		}
 
-		p.Target = r.Target
+		p.Target, err = strconv.ParseInt(r.Target, 10, 64)
+		if err != nil {
+			return err
+		}
 
 		if r.InclusionDelay != "" {
 			p.InclusionDelay, err = strconv.ParseInt(r.InclusionDelay, 10, 64)
@@ -225,7 +231,7 @@ type SyncCommitteeRewardsContainer struct {
 func (s *SyncCommitteeRewardsApiResponse) UnmarshalJSON(data []byte) error {
 	type internal struct {
 		Data []struct {
-			Reward         int64  `json:"reward"`
+			Reward         string `json:"reward"`
 			ValidatorIndex string `json:"validator_index"`
 		} `json:"data"`
 		ExecutionOptimistic bool `json:"execution_optimistic"`
@@ -247,7 +253,10 @@ func (s *SyncCommitteeRewardsApiResponse) UnmarshalJSON(data []byte) error {
 			return err
 		}
 
-		p.Reward = r.Reward
+		p.Reward, err = strconv.ParseInt(r.Reward, 10, 64)
+		if err != nil {
+			return err
+		}
 
 		s.Data[i] = p
 	}

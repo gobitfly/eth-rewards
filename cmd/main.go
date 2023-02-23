@@ -24,6 +24,6 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	logrus.Infof("epoch %d: %s", *epoch, rewards[uint64(169913)].String())
-	logrus.Infof("epoch %d: %d", *epoch, rewards[uint64(169913)].TotalClRewards())
+	logrus.Infof("epoch %d: %s", *epoch, rewards[uint64(1000)].String())
+	logrus.Infof("epoch %d: %d", *epoch, rewards[uint64(1000)].TotalClRewards())
 }

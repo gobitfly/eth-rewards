@@ -159,6 +159,50 @@ func (a *AttestationRewardsApiResponse) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+type BalanceApiResponse struct {
+	Data []struct {
+		Index   uint64 `json:"index"`
+		Balance uint64 `json:"balance"`
+	} `json:"data"`
+	ExecutionOptimistic bool `json:"execution_optimistic"`
+}
+
+func (b *BalanceApiResponse) UnmarshalJSON(data []byte) error {
+
+	type internal struct {
+		Data []struct {
+			Index   string `json:"index"`
+			Balance string `json:"balance"`
+		} `json:"data"`
+		ExecutionOptimistic bool `json:"execution_optimistic"`
+	}
+
+	var v internal
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+
+	var err error
+
+	b.Data = make([]struct {
+		Index   uint64 "json:\"index\""
+		Balance uint64 "json:\"balance\""
+	}, len(v.Data))
+
+	for i := range v.Data {
+		b.Data[i].Index, err = strconv.ParseUint(v.Data[i].Index, 10, 64)
+		if err != nil {
+			return err
+		}
+		b.Data[i].Balance, err = strconv.ParseUint(v.Data[i].Balance, 10, 64)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 type BlockRewardsApiResponse struct {
 	Data struct {
 		Attestations      uint64 `json:"attestations"`

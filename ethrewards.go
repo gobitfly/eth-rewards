@@ -86,9 +86,9 @@ func GetRewardsForEpoch(epoch uint64, client *beacon.Client, elEndpoint string) 
 					}
 
 					if sr.Reward > 0 {
-						rewards[sr.ValidatorIndex].SyncCommitteeReward = uint64(sr.Reward)
+						rewards[sr.ValidatorIndex].SyncCommitteeReward += uint64(sr.Reward)
 					} else {
-						rewards[sr.ValidatorIndex].SyncCommitteePenalty = uint64(sr.Reward * -1)
+						rewards[sr.ValidatorIndex].SyncCommitteePenalty += uint64(sr.Reward * -1)
 					}
 				}
 			}
@@ -104,9 +104,9 @@ func GetRewardsForEpoch(epoch uint64, client *beacon.Client, elEndpoint string) 
 			if rewards[blockRewards.Data.ProposerIndex] == nil {
 				rewards[blockRewards.Data.ProposerIndex] = &types.ValidatorEpochIncome{}
 			}
-			rewards[blockRewards.Data.ProposerIndex].ProposerAttestationInclusionReward = blockRewards.Data.Attestations
-			rewards[blockRewards.Data.ProposerIndex].ProposerSlashingInclusionReward = blockRewards.Data.AttesterSlashings + blockRewards.Data.ProposerSlashings
-			rewards[blockRewards.Data.ProposerIndex].ProposerSyncInclusionReward = blockRewards.Data.SyncAggregate
+			rewards[blockRewards.Data.ProposerIndex].ProposerAttestationInclusionReward += blockRewards.Data.Attestations
+			rewards[blockRewards.Data.ProposerIndex].ProposerSlashingInclusionReward += blockRewards.Data.AttesterSlashings + blockRewards.Data.ProposerSlashings
+			rewards[blockRewards.Data.ProposerIndex].ProposerSyncInclusionReward += blockRewards.Data.SyncAggregate
 			rewardsMux.Unlock()
 			return nil
 		})

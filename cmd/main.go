@@ -18,12 +18,36 @@ func main() {
 
 	client := beacon.NewClient(*clNode, time.Second*30)
 
-	rewards, err := ethrewards.GetRewardsForEpoch(*epoch, client, *elNode)
+	rewardsApi := int64(0)
+	rewardsBalance := int64(0)
+	for i := *epoch; i < i+225; i++ {
+		rewards, err := ethrewards.GetRewardsForEpoch(i, client, *elNode)
 
-	if err != nil {
-		logrus.Fatal(err)
+		if err != nil {
+			logrus.Fatal(err)
+		}
+
+		balance, err := client.Balance((i+1)*32, 1501)
+		if err != nil {
+			logrus.Fatal(err)
+		}
+
+		balanceNext, err := client.Balance((i+2)*32, 1501)
+		if err != nil {
+			logrus.Fatal(err)
+		}
+
+		logrus.Infof("epoch %d: %s", i, rewards[uint64(1501)].String())
+		logrus.Infof("epoch %d: %d income", i, rewards[uint64(1501)].TotalClRewards())
+		logrus.Infof("epoch %d: %d balance", i, balance)
+		logrus.Infof("epoch %d: %d balanceNext", i, balanceNext)
+		logrus.Infof("epoch %d: %d delta", i, int64(balanceNext)-int64(balance))
+
+		rewardsApi += rewards[uint64(1501)].TotalClRewards()
+		rewardsBalance += int64(balanceNext) - int64(balance)
+
+		logrus.Infof("eppch %d: %d api", i, rewardsApi)
+		logrus.Infof("eppch %d: %d balance", i, rewardsBalance)
+		logrus.Info()
 	}
-
-	logrus.Infof("epoch %d: %s", *epoch, rewards[uint64(1000)].String())
-	logrus.Infof("epoch %d: %d", *epoch, rewards[uint64(1000)].TotalClRewards())
 }

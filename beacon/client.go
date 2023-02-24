@@ -18,7 +18,6 @@ type Client struct {
 }
 
 func NewClient(endpoint string, timeout time.Duration) *Client {
-
 	endpoint = strings.TrimSuffix(endpoint, "/")
 	return &Client{
 		endpoint: endpoint,
@@ -26,6 +25,32 @@ func NewClient(endpoint string, timeout time.Duration) *Client {
 			Timeout: timeout,
 		},
 	}
+}
+
+func (c *Client) Balance(slot uint64, validator uint64) (uint64, error) {
+
+	url := fmt.Sprintf("%s/eth/v1/beacon/states/%d/validator_balances?id=%d", c.endpoint, slot, validator)
+
+	resp, err := c.httpClient.Get(url)
+
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return 0, fmt.Errorf("http request error: %s", resp.Status)
+	}
+
+	r := &types.BalanceApiResponse{}
+
+	err = json.NewDecoder(resp.Body).Decode(r)
+
+	if err != nil {
+		return 0, err
+	}
+	return r.Data[0].Balance, nil
+
 }
 
 func (c *Client) AttestationRewards(epoch uint64) (*types.AttestationRewardsApiResponse, error) {

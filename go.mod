@@ -3,6 +3,7 @@ module github.com/gobitfly/eth-rewards
 go 1.18
 
 require (
+	github.com/davecgh/go-spew v1.1.1
 	github.com/ethereum/go-ethereum v1.10.23
 	github.com/sirupsen/logrus v1.9.0
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f

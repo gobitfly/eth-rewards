@@ -46,8 +46,8 @@ func main() {
 		rewardsApi += rewards[uint64(1501)].TotalClRewards()
 		rewardsBalance += int64(balanceNext) - int64(balance)
 
-		logrus.Infof("eppch %d: %d api", i, rewardsApi)
-		logrus.Infof("eppch %d: %d balance", i, rewardsBalance)
+		logrus.Infof("epoch %d: %d api", i, rewardsApi)
+		logrus.Infof("epoch %d: %d balance", i, rewardsBalance)
 		logrus.Info()
 	}
 }

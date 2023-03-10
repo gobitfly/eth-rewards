@@ -27,23 +27,23 @@ func main() {
 			logrus.Fatal(err)
 		}
 
-		balance, err := client.Balance((i+1)*32, 1501)
+		balance, err := client.Balance((i+1)*32, 195851)
 		if err != nil {
 			logrus.Fatal(err)
 		}
 
-		balanceNext, err := client.Balance((i+2)*32, 1501)
+		balanceNext, err := client.Balance((i+2)*32, 195851)
 		if err != nil {
 			logrus.Fatal(err)
 		}
 
-		logrus.Infof("epoch %d: %s", i, rewards[uint64(1501)].String())
-		logrus.Infof("epoch %d: %d income", i, rewards[uint64(1501)].TotalClRewards())
+		logrus.Infof("epoch %d: %s", i, rewards[uint64(195851)].String())
+		logrus.Infof("epoch %d: %d income", i, rewards[uint64(195851)].TotalClRewards())
 		logrus.Infof("epoch %d: %d balance", i, balance)
 		logrus.Infof("epoch %d: %d balanceNext", i, balanceNext)
 		logrus.Infof("epoch %d: %d delta", i, int64(balanceNext)-int64(balance))
 
-		rewardsApi += rewards[uint64(1501)].TotalClRewards()
+		rewardsApi += rewards[uint64(195851)].TotalClRewards()
 		rewardsBalance += int64(balanceNext) - int64(balance)
 
 		logrus.Infof("epoch %d: %d api", i, rewardsApi)

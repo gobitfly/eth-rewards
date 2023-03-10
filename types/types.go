@@ -72,17 +72,17 @@ func (a *AttestationRewardsApiResponse) UnmarshalJSON(data []byte) error {
 	type internal struct {
 		Data struct {
 			IdealRewards []struct {
-				EffectiveBalance string          `json:"effective_balance"`
-				Head             string          `json:"head"`
-				Source           json.RawMessage `json:"source"`
-				Target           json.RawMessage `json:"target"`
+				EffectiveBalance string `json:"effective_balance"`
+				Head             string `json:"head"`
+				Source           string `json:"source"`
+				Target           string `json:"target"`
 			} `json:"ideal_rewards"`
 			TotalRewards []struct {
-				Head           string          `json:"head"`
-				Source         json.RawMessage `json:"source"`
-				Target         json.RawMessage `json:"target"`
-				InclusionDelay string          `json:"inclusion_delay"`
-				ValidatorIndex string          `json:"validator_index"`
+				Head           string `json:"head"`
+				Source         string `json:"source"`
+				Target         string `json:"target"`
+				InclusionDelay string `json:"inclusion_delay"`
+				ValidatorIndex string `json:"validator_index"`
 			} `json:"total_rewards"`
 		} `json:"data"`
 		ExecutionOptimistic bool `json:"execution_optimistic"`
@@ -110,36 +110,14 @@ func (a *AttestationRewardsApiResponse) UnmarshalJSON(data []byte) error {
 			return err
 		}
 
-		// try to unmarshall into a int64
-		err := json.Unmarshal(r.Source, &p.Source)
+		p.Source, err = strconv.ParseInt(r.Source, 10, 64)
 		if err != nil {
-			// if it failes try to unmarshall into a string & convert to int64
-			s := ""
-			err := json.Unmarshal(r.Source, &s)
-
-			if err != nil {
-				return err
-			}
-			p.Target, err = strconv.ParseInt(s, 10, 64)
-			if err != nil {
-				return err
-			}
+			return err
 		}
 
-		// try to unmarshall into a int64
-		err = json.Unmarshal(r.Target, &p.Target)
+		p.Target, err = strconv.ParseInt(r.Target, 10, 64)
 		if err != nil {
-			// if it failes try to unmarshall into a string & convert to int64
-			s := ""
-			err := json.Unmarshal(r.Target, &s)
-
-			if err != nil {
-				return err
-			}
-			p.Target, err = strconv.ParseInt(s, 10, 64)
-			if err != nil {
-				return err
-			}
+			return err
 		}
 
 		a.Data.IdealRewards[i] = p
@@ -158,36 +136,14 @@ func (a *AttestationRewardsApiResponse) UnmarshalJSON(data []byte) error {
 			return err
 		}
 
-		// try to unmarshall into a int64
-		err := json.Unmarshal(r.Source, &p.Source)
+		p.Source, err = strconv.ParseInt(r.Source, 10, 64)
 		if err != nil {
-			// if it failes try to unmarshall into a string & convert to int64
-			s := ""
-			err := json.Unmarshal(r.Source, &s)
-
-			if err != nil {
-				return err
-			}
-			p.Target, err = strconv.ParseInt(s, 10, 64)
-			if err != nil {
-				return err
-			}
+			return err
 		}
 
-		// try to unmarshall into a int64
-		err = json.Unmarshal(r.Target, &p.Target)
+		p.Target, err = strconv.ParseInt(r.Target, 10, 64)
 		if err != nil {
-			// if it failes try to unmarshall into a string & convert to int64
-			s := ""
-			err := json.Unmarshal(r.Target, &s)
-
-			if err != nil {
-				return err
-			}
-			p.Target, err = strconv.ParseInt(s, 10, 64)
-			if err != nil {
-				return err
-			}
+			return err
 		}
 
 		if r.InclusionDelay != "" {

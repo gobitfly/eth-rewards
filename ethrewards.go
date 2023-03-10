@@ -136,7 +136,7 @@ func GetRewardsForEpoch(epoch uint64, client *beacon.Client, elEndpoint string) 
 				rewards[ar.ValidatorIndex].AttestationSourcePenalty = uint64(ar.Source * -1)
 			}
 
-			if ar.Source > 0 {
+			if ar.Target > 0 {
 				rewards[ar.ValidatorIndex].AttestationTargetReward = uint64(ar.Target)
 			} else {
 				rewards[ar.ValidatorIndex].AttestationTargetPenalty = uint64(ar.Target * -1)

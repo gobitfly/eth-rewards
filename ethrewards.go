@@ -35,7 +35,7 @@ func GetRewardsForEpoch(epoch uint64, client *beacon.Client, elEndpoint string) 
 
 	rewards := make(map[uint64]*types.ValidatorEpochIncome)
 
-	for i := startSlot + 1; i <= endSlot; i++ {
+	for i := startSlot; i <= endSlot; i++ {
 		i := i
 
 		g.Go(func() error {
